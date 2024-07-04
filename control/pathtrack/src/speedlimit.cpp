@@ -33,9 +33,19 @@ void GetObsSpeedLimit(float obs_dis, float &speedlimit)
     float stop_dis=0.2;
     float speed=GetVelByDistance(2,0.8,stop_dis,0,obs_dis);  
 
+
     // 缓慢加速
     float dspeed=speed-speedlimit;
-    if(dspeed>0.001) dspeed=0.001;
+
+
+    //  if (obs_dis<0.21 && speedlimit==0.0 && dspeed==0) 
+    // {
+    //     static TTimer tmr;
+    //     if(tmr.GetValue()>50)  return;
+    //     tmr.Clear();
+    // }
+
+    if(dspeed>0.001) dspeed=0.0005;
     speedlimit+=dspeed;
 }
  

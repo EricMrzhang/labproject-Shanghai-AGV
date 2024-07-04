@@ -7,6 +7,7 @@ float64 batterySOH
 float64 batterySOC
 float64 batteryVoltage
 float64 batteryCurrent
+int32 batterytemperature
 int32 charge_state
 
 float32 vehSpeed    

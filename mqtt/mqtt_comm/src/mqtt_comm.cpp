@@ -221,6 +221,7 @@ void BatteryCallback(const data_comm::battery::ConstPtr &msg) //  电池信息
 {
     agvstate_msg.batterySOC = msg->SOC;
     agvstate_msg.charge_state = msg->charge_state;
+    agvstate_msg.batterytemperature=msg->temperature;
     agvstate_msg.batteryCurrent = msg->current;
     agvstate_msg.batteryVoltage = msg->voltage;
 
