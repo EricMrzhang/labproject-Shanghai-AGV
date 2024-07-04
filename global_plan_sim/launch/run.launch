@@ -18,7 +18,7 @@
     </node>
 
     <node pkg="pathtrack" type="speedlimit" name="speedlimit" output="screen">
-        <param name="obstacle_enable" value="false"/>
+        <param name="obstacle_enable" value="true"/>
     </node>
 
     <node pkg="pathtrack" type="selfturnctr" name="selfturnctr" output="screen"/>

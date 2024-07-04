@@ -184,10 +184,12 @@ pose29:
   caption: ""
 pose30:
   map_x: 9.780477523803711
-  map_y: 50.16868209838867
+  map_y: 49.16868209838867
   heading: -96.16006830642461
   vel: 0.3
-  caption: ""
+  caption: "B001"
+  action0: ["act0", 21, 2, 5]
+  action1: ["act1", 0, 0, 1]
 pose31:
   map_x: 9.687897682189941
   map_y: 48.77140808105469
@@ -201,7 +203,9 @@ pose32:
   map_y: 47.28407669067383
   heading: -92.8636162322491
   vel: 0.3
-  caption: ""
+  caption: "B002"
+  action0: ["act0", 21, -1, 5]
+  action1: ["act1", 0, 0, 1]
 pose33:
   map_x: 9.653508186340332
   map_y: 46.44549179077148
@@ -215,7 +219,9 @@ pose34:
   map_y: 46.11911010742188
   heading: -90.28243856753926
   vel: 0.3
-  caption: ""
+  caption: "B003"
+  action0: ["act0", 21, -1, 5]
+  action1: ["act1", 0, 0, 1]
 pose35:
   map_x: 9.700893402099609
   map_y: 44.48845291137695
@@ -237,7 +243,9 @@ pose37:
   map_y: 42.64807510375977
   heading: -93.92121365163655
   vel: 0.3
-  caption: ""
+  caption: "B004"
+  action0: ["act0", 17.5, 3.5, 5]
+  action1: ["act1", 0, 0, 1]
 pose38:
   map_x: 9.617691040039062
   map_y: 41.365966796875
@@ -282,10 +290,12 @@ pose43:
   action1: ["act1", 0, 0, 1]
 pose44:
   map_x: 9.447949409484863
-  map_y: 36.60274887084961
+  map_y: 36.20274887084961
   heading: -91.19861889332735
   vel: 0.3
-  caption: ""
+  caption: "B005"
+  action0: ["act0", 20, 3.5, 5]
+  action1: ["act1", 0, 0, 1]
 pose45:
   map_x: 9.425429344177246
   map_y: 35.20554733276367
@@ -305,7 +315,9 @@ pose47:
   map_y: 34.09585952758789
   heading: -94.83508203428158
   vel: 0.3
-  caption: ""
+  caption: "B006"
+  action0: ["act0", 20, 7, 5]
+  action1: ["act1", 0, 0, 1]
 pose48:
   map_x: 9.299197196960449
   map_y: 33.53226470947266
@@ -335,7 +347,9 @@ pose52:
   map_y: 30.39058494567871
   heading: -83.37222507982686
   vel: 0.3
-  caption: ""
+  caption: "B007"
+  action0: ["act0", 20.5, 0, 5]
+  action1: ["act1", 0, 0, 1]
 pose53:
   map_x: 9.238847732543945
   map_y: 29.65248870849609
@@ -349,7 +363,9 @@ pose54:
   map_y: 28.9933032989502
   heading: -91.35861895849254
   vel: 0.3
-  caption: ""
+  caption: "B008"
+  action0: ["act0", 20.5, -4, 5]
+  action1: ["act1", 0, 0, 1]
 pose55:
   map_x: 9.364096641540527
   map_y: 28.0109806060791
@@ -363,7 +379,6 @@ pose56:
   map_y: 27.16994667053223
   heading: -90.49029002733768
   vel: 0.3
-  caption: ""
 pose57:
   map_x: 9.412285804748535
   map_y: 26.26130104064941
@@ -377,7 +392,9 @@ pose58:
   map_y: 25.54351043701172
   heading: -92.35634870733095
   vel: 0.3
-  caption: ""
+  caption: "B009"
+  action0: ["act0", 19, 1, 5]
+  action1: ["act1", 0, 0, 1]
 pose59:
   map_x: 9.395059585571289
   map_y: 24.65747261047363
@@ -399,7 +416,9 @@ pose61:
   map_y: 22.58001518249512
   heading: -90.95345577969495
   vel: 0.3
-  caption: ""
+  caption: "B010"
+  action0: ["act0", 21, 1, 5]
+  action1: ["act1", 0, 0, 1]
 pose62:
   map_x: 9.328431129455566
   map_y: 21.39577445983887
@@ -809,7 +828,7 @@ pose125:
   map_y: 0.83
   heading: 177.7307845473742
   vel: 0.2
-  caption: "A051"
+  caption: "charge"
   action0: ["charge", 20]
 pose126:
   map_x: -0.1

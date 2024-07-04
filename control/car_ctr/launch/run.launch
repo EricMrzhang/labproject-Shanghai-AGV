@@ -6,7 +6,7 @@
 </node>
 
 <node pkg="car_ctr" name="car_charge" type="car_charge" output="screen">
-    <param name="remote_ip" value="192.168.3.100"/> 
+    <param name="remote_ip" value="169.2.60.100"/> 
 </node>
 
 <!-- <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui"/> -->

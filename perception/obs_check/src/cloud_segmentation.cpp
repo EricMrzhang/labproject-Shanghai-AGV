@@ -26,7 +26,7 @@ ros::NodeHandle *nh;
 ros::Publisher pub_cloud_front, pub_cloud_back, pub_cloud_left, pub_cloud_right;
 
 float max_xy_range=10, max_z=0.1, min_z=-0.6;  
-float agv_width=0.6, agv_length=0.9;  
+float agv_width=0.3, agv_length=0.9;  
 float lidar_dead_leftright=0.05, lidar_dead_frontback=0.05;
 
 TNodeCheck *nodecheck;

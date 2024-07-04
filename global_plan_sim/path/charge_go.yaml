@@ -1,0 +1,22 @@
+accordingPathdir: false
+onlyAkm: false
+
+pose0:
+  map_x: 0.4712182879447937
+  map_y: 0.83
+  heading: 177.9732082998035
+  vel: 0.2
+  caption: ""
+pose1:
+  map_x: 0.1
+  map_y: 0.83
+  heading: 177.7307845473742
+  vel: 0.2
+  caption: "charge"
+  action0: ["charge", 20]
+pose2:
+  map_x: -0.1
+  map_y: 0.83
+  heading: 177.1582774840159
+  vel: 0.2
+  caption: HOME

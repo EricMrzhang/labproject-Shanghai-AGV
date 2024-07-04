@@ -167,6 +167,47 @@ namespace rviz_gui
         trackpath_pub.publish(track_path);
     }
 
+    void Panel_Global_Plan_Sim::ObsCheckChangeByDis2Home()
+    {
+        geometry_msgs::Point p1=pose_map.pose.position, p0;
+        p0.x=-0.1,  p0.y=0.83;  //  HOME点坐标
+        float dis=GetDistanceXY(p0,p1);
+
+        if(dis<0.6 && obstacle_enable)  
+        {
+            obstacle_enable=false;
+            nh_local->setParam("/speedlimit/obstacle_enable", obstacle_enable);
+        }
+        else if(dis>0.6 && !obstacle_enable)
+        {
+            obstacle_enable=true;
+            nh_local->setParam("/speedlimit/obstacle_enable", obstacle_enable);
+        }  
+
+        // ROS_INFO("dis=%.2f  e=%d",dis, obstacle_enable);
+    }
+
+    void Panel_Global_Plan_Sim::AutoChargeProc()
+    {
+        static TTimer tmr;
+        if(tmr.GetValue()<30)  return;
+        tmr.Clear();
+
+        geometry_msgs::Point p1=pose_map.pose.position, p0;
+        p0.x=-0.1,  p0.y=0.83;  //  HOME点坐标
+        float dis=GetDistanceXY(p0,p1);
+        if(dis>1)  return;
+
+        if(battery_info.charge_state && battery_info.current>-0.1 && battery_info.voltage>310)
+        {
+            btn_charge_close_onclick();
+        }
+        else if(battery_info.charge_state==0 && battery_info.voltage<295.0)
+        {
+            btn_charge_ready_onclick();
+        }
+    }
+
     void Panel_Global_Plan_Sim::qtmrfunc()  // 定时
     {
         nh_local->getParam("/gps_base/utmx_zero", utm_x_zero);
@@ -197,10 +238,6 @@ namespace rviz_gui
         if(charge_state)  ui->btn_charge->setStyleSheet("background-color: rgb(0, 255, 0);");
         else ui->btn_charge->setStyleSheet("background-color: rgb(186, 189, 182);");
 
-        nh->getParam("/speedlimit/obstacle_enable", obstacle_enable);
-        if(obstacle_enable)  ui->btn_obstacle->setStyleSheet("background-color: rgb(0, 255, 0);");
-        else ui->btn_obstacle->setStyleSheet("background-color: rgb(186, 189, 182);");
-
         // nh_local->getParam("/pathtrack/obs_stop_enable", obs_enable);
         // if(obs_enable)  ui->btn_obs->setStyleSheet("background-color: rgb(0, 255, 0);");
         // else ui->btn_obs->setStyleSheet("background-color: rgb(186, 189, 182);");
@@ -223,13 +260,21 @@ namespace rviz_gui
         sprintf(buf, "pose: x=%.2f y=%.2f angle=%.1f°", pose_map.pose.position.x,pose_map.pose.position.y, angle);
         ui->lab1->setText(QString::fromUtf8(buf));
         ContinueProcess();
+
+        nh->getParam("/speedlimit/obstacle_enable", obstacle_enable);
+        ObsCheckChangeByDis2Home();
+        if(obstacle_enable)  ui->btn_obstacle->setStyleSheet("background-color: rgb(0, 255, 0);");
+        else ui->btn_obstacle->setStyleSheet("background-color: rgb(186, 189, 182);");
+
+        AutoChargeProc();
     }
 
     void Panel_Global_Plan_Sim::mqttTaskCallback(const mqtt_comm::mqtt_task::ConstPtr &msg)
     {
         cur_task.taskId=msg->taskId;
         task_id=msg->taskId;
-        LoadPath(msg->pathId);
+        workIds=msg->workIds;
+        LoadPath(msg->pathId, workIds);
         repeat_flag=1;
 
         cur_task.stamp = ros::Time::now();
@@ -254,9 +299,7 @@ namespace rviz_gui
         {
             btn_home_onclick();
         }
-
     }
-
 
     void Panel_Global_Plan_Sim::BackObsDisCallback(const std_msgs::Float32::ConstPtr &msg)
     {
@@ -363,7 +406,7 @@ namespace rviz_gui
         cur_task.path[n-2].actions.push_back(act);
     }
 
-    void Panel_Global_Plan_Sim::LoadPath(string fn)
+    void Panel_Global_Plan_Sim::LoadPath(string fn, string workIds)
     {
         fn=pathfilepath+"/"+fn+".yaml";
         if(access(fn.c_str(), F_OK)!=0)  return;
@@ -430,26 +473,40 @@ namespace rviz_gui
                     point.pointHA = config[posename]["heading"].as<float>();
                     point.vehSpeed = config[posename]["vel"].as<float>();
                     point.caption="";
+                    point.actEnable=false; 
                     if(config[posename]["caption"].IsDefined())  
-                        point.caption = config[posename]["caption"].as<string>();
-
-                    for(int j=0;j<100;j++)
                     {
-                        char actname[100];
-                        sprintf(actname,"action%d",j);
-
-                        if(config[posename][actname].IsDefined())
+                        point.caption = config[posename]["caption"].as<string>();
+                        // TODO WSK
+                        if(workIds=="" || point.caption=="charge" || point.caption=="HOME" || (point.caption.length()>=4 && workIds.find(point.caption)!=string::npos))  
                         {
-                            YAML::Node node=config[posename][actname];
-                            mqtt_comm::path_point_action act;
-                            for(int i=0;i<node.size();i++)
-                                if(i==0)  act.caption=node[i].as<string>();
-                                else act.params.push_back(node[i].as<float>());
-                            point.actions.push_back(act);    
-                            // ROS_INFO("%d",node.size());
-                        }
-                        else break;
+                            point.actEnable=true; 
+                            // ROS_INFO("%s, %s ", workIds.c_str(), point.caption.c_str());
+                        }  
                     }
+                    
+                    if(point.actEnable)
+                    {
+                        for(int j=0;j<100;j++)
+                        {
+                            char actname[100];
+                            sprintf(actname,"action%d",j);
+
+                            if(config[posename][actname].IsDefined())
+                            {
+                                YAML::Node node=config[posename][actname];
+                                mqtt_comm::path_point_action act;
+                                
+                                for(int i=0;i<node.size();i++)
+                                    if(i==0)  act.caption=node[i].as<string>();
+                                    else act.params.push_back(node[i].as<float>());
+
+                                point.actions.push_back(act);    
+                                // ROS_INFO("%d",node.size());
+                            }
+                            else break;
+                        }
+                    }    
                     cur_task.path.push_back(point); 
                 }   
             }
@@ -479,7 +536,7 @@ namespace rviz_gui
         usleep(50000);
         
         string str=ui->cb_load->currentText().toStdString();
-        LoadPath(str);
+        LoadPath(str, workIds);
         cur_task.stamp = ros::Time::now();
         cur_task.final_path=true;
         cur_task.taskId=task_id;
@@ -522,9 +579,18 @@ namespace rviz_gui
 
     void Panel_Global_Plan_Sim::btn_charge_ready_onclick()      
     {
-        std_msgs::String cmd;
-        cmd.data="open_out";
-        charge_cmd_pub.publish(cmd);
+        // std_msgs::String cmd;
+        // cmd.data="open_out";
+        // charge_cmd_pub.publish(cmd);
+
+        btn_stop_onclick();
+        usleep(50000);
+        
+        LoadPath("charge_go", "");
+        cur_task.stamp = ros::Time::now();
+        cur_task.final_path=true;
+        cur_task.taskId="charge_go";
+        task_pub.publish(cur_task);
     }
 
     void Panel_Global_Plan_Sim::btn_charge_close_onclick()      
@@ -532,6 +598,17 @@ namespace rviz_gui
         std_msgs::String cmd;
         cmd.data="close_in";
         charge_cmd_pub.publish(cmd);
+
+        sleep(3);
+
+        btn_stop_onclick();
+        usleep(50000);
+
+        LoadPath("charge_return", "");
+        cur_task.stamp = ros::Time::now();
+        cur_task.final_path=true;
+        cur_task.taskId="charge_return";
+        task_pub.publish(cur_task);
     }
 
     void Panel_Global_Plan_Sim::btn_charge_onclick()      
@@ -587,12 +664,12 @@ namespace rviz_gui
             tmr.Clear();
             repeat_flag++;
         }
-        else if( repeat_flag==2 && tmr.GetValue()>3 && fabs(car_ctr.speed)<0.01 && remain_path_length<0.1)
+        else if(repeat_flag==2 && tmr.GetValue()>3 && fabs(car_ctr.speed)<0.01 && remain_path_length<0.1)
         {
             repeat_flag++;
             tmr.Clear();
         }
-        else if (repeat_flag==3 && tmr.GetValue()>5)
+        else if(repeat_flag==3 && tmr.GetValue()>0.1)
         {           
             if(next_path!="")  
             {

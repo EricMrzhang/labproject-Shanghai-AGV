@@ -82,7 +82,6 @@ public:
  
     nav_msgs::Path GenFinalPathByPose(geometry_msgs::PoseStamped pose);
     void PubPathMarkers();
-    void UpdateLaneType();
 };
 
 //  发布路径速度与方向标识 task_path
@@ -445,33 +444,12 @@ void TLocalPathPlan::GlobalPathPlan()
     // printf("globalpath size=%d\n", global_path.poses.size());
 }
 
-
-
-void TLocalPathPlan::UpdateLaneType()
-{
-    // 寻找任务路径上最近点，如果加入引导点，则存在问题
-    int id=0;
-    FindNearestPointInPath(task_path, id, 2);
-    // printf("id=%d\n",id);
-    if(id>=0 && id<cur_task.path.size())
-    {
-        static int lane_type=-1;
-        if(lane_type!=cur_task.path[id].lane_type)
-        {
-            lane_type=cur_task.path[id].lane_type;
-            nh_local->setParam("lane_type", lane_type);
-        }
-    }
-}
-
 //  局部路径规划
 void TLocalPathPlan::LocalPathPlan()
 {
     local_path.header.stamp = ros::Time::now();
     local_path.poses.clear();
-    
 
-    UpdateLaneType();
     FindNearestPointInPath(global_path, Nearest_ID, 2);
     // printf("near=%d\n",Nearest_ID);
 

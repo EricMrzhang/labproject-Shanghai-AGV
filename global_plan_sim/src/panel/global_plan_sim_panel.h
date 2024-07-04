@@ -85,10 +85,11 @@ namespace rviz_gui
         bool charge_state=false;
         bool obstacle_enable=false;
         string task_id="task001";
+        string workIds="";
                 
         float front_obs_dis=999, back_obs_dis=999, left_obs_dis=999,right_obs_dis=999;
 
-        void LoadPath(string fn);
+        void LoadPath(string fn, string workIds="");
         void GenHomePath();
 
         void PubTrackPath();
@@ -106,6 +107,8 @@ namespace rviz_gui
         void MqttCtrCallback(const mqtt_comm::mqtt_controls::ConstPtr &msg);
         int CheckRosNode(string name);
         void UpdateErrCode();
+        void ObsCheckChangeByDis2Home();
+        void AutoChargeProc();
 
     private:
         Ui::Panel_Global_Plan_Sim *ui;

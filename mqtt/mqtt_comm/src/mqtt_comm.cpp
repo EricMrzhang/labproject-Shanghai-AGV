@@ -86,7 +86,7 @@ void SensorFaultInit()
 
     sensor_data.nodename = "/cap_image1";                    //CCD
     sensor_data.paramname = "node_rate";
-    sensor_data.rate_min = 10;
+    sensor_data.rate_min = 1;
     sensor_data.fault.desc = "CCD fault";
     sensor_data.fault.code=0x1003;
     sensor_data.fault.level=1;
@@ -229,8 +229,7 @@ void BatteryCallback(const data_comm::battery::ConstPtr &msg) //  电池信息
 
 void RemainPathCallback(const std_msgs::Float64::ConstPtr &msg)
 {
-    // remain_path_length=msg->data;
-    // agvstate_msg.remain_path=msg->data;
+    remain_path_length=msg->data;
     // ROS_INFO("%.2f", remain_path_length); 
 }
 
@@ -238,6 +237,9 @@ void Pub_AgvState() //  发布车辆状态
 {
     agvstate_msg.msgType = "agvinfo";
     agvstate_msg.timestamp = ros::Time::now().toSec() * 1000;
+
+    if(remain_path_length<1)  agvstate_msg.taskStatus=1;   // task finished
+    else  agvstate_msg.taskStatus=0;
     
     resp_agvstate_pub.publish(agvstate_msg);
 }
@@ -266,6 +268,7 @@ void TurntableCallback(const std_msgs::String::ConstPtr &msg)
 
 void mqttTaskCallback(const mqtt_comm::mqtt_task::ConstPtr &msg) //  回应信号
 {
+    agvstate_msg.taskId=msg->taskId;
     // ROS_INFO("%s", );
 }
 
@@ -296,7 +299,9 @@ int main(int argc, char *argv[])
     ros::Subscriber turntable_sub = nh->subscribe<std_msgs::String>("/turntable/table_state", 10, TurntableCallback);
     ros::Subscriber battery_sub = nh->subscribe<data_comm::battery>("/battery_info", 10, BatteryCallback);
     ros::Subscriber controls_sub = nh->subscribe<mqtt_comm::mqtt_controls>("/mqtt_controls", 10, controlsCallback);
-    
+    ros::Subscriber remainpath_sub = nh->subscribe<std_msgs::Float64>("/local_path_plan/remainpath", 10, RemainPathCallback);
+        
+
     float check_duration=4;
     nodecheck = new TNodeCheck(nh, "node_rate",check_duration);
     nodecheck->Find("node_rate")->SetLimit(0.4);

@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 		       std::cout<<"Can't open the file!"<<std::endl;
 
 			imwrite(path+"/if.jpg", infrared_image);
-			// imwrite(path+"/myif.jpg", my_image);   
+			imwrite(path+"/myif.jpg", my_image);   //正常作业时注释
 			// ROS_INFO("path=%s if saved", (path+"/if_temperature.txt").c_str());
 		}
         work_state=new_work_state;

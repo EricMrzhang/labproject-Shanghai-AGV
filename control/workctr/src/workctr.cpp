@@ -112,7 +112,6 @@ void TWorkCtr::FindPoseAction()
             // 如果p_base的x坐标绝对值小于0.02，并且x坐标和y坐标的绝对值都小于0.1,
             // 则将路径点的动作列表赋值给全局动作列表actions，清空路径点的动作列表，并设置pos_id为路径点的caption
             if(p_base.point.x<0.02 && fabs(p_base.point.x)<0.1 && fabs(p_base.point.y)<0.1)
-            // if( fabs(p_base.point.x)<0.5 && fabs(p_base.point.y)<0.5)   //根据跟踪定位精度修改
             {
                 actions=it.actions;
                 it.actions.clear();

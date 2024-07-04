@@ -96,6 +96,7 @@ public:
         else  sprintf(str, "Car Disable");
         udp->Send(str);
         usleep(2000);
+        // ROS_INFO("ENABLE!");
     }
 
     void UDP_Proc() //  用于处理小车上传的状态信息
@@ -132,6 +133,14 @@ public:
         }
             
         carstate_pub.publish(car_state);
+
+        static TTimer tmr;
+        if(tmr.GetValue()>1)
+        {
+            tmr.Clear();
+            if(car_state.enable==false && car_state.ctrmode==1)  Enable(true);
+            // ROS_INFO("ENABLE!");
+        }    
     }
 
     void Can_Proc()

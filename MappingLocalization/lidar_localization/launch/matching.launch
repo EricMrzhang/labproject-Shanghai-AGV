@@ -14,7 +14,7 @@
     <include file="$(find rs_to_velodyne)/launch/run.launch"/>
     
     <!-- 可视化 -->
-    <node pkg="rviz"  type="rviz"  name="rviz_matching"  args="-d $(find lidar_localization)/rviz/mapping.rviz"/>
+    <!-- <node pkg="rviz"  type="rviz"  name="rviz_matching"  args="-d $(find lidar_localization)/rviz/mapping.rviz"/> -->
 
     <!-- Robsense激光雷达 -->
     <node pkg="rslidar_sdk" name="rslidar_sdk_node" type="rslidar_sdk_node" output="screen"/>

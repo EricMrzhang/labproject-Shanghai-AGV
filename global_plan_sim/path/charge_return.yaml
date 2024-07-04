@@ -1,0 +1,21 @@
+accordingPathdir: false
+onlyAkm: false
+
+pose0:
+  map_x: -0.1
+  map_y: 0.83
+  heading: 177.1582774840159
+  vel: 0.2
+  caption: ""
+pose1:
+  map_x: 0.1
+  map_y: 0.83
+  heading: 177.7307845473742
+  vel: 0.2
+  caption: ""
+pose2:
+  map_x: 0.2
+  map_y: 0.83
+  heading: 177.9732082998035
+  vel: 0.2
+  caption: ""  

@@ -35,7 +35,7 @@ void GetObsSpeedLimit(float obs_dis, float &speedlimit)
 
     // 缓慢加速
     float dspeed=speed-speedlimit;
-    if(dspeed>0.01) dspeed=0.01;
+    if(dspeed>0.001) dspeed=0.001;
     speedlimit+=dspeed;
 }
  
