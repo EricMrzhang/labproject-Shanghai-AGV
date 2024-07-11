@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   cv_bridge
   common
+  std_srvs
 )
 find_package(OpenCV REQUIRED)
 find_package(Qt5 COMPONENTS  Widgets REQUIRED)

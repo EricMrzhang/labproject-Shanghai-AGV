@@ -91,7 +91,7 @@ namespace rviz_gui
         connect(ui->btn_stop, SIGNAL(clicked()), this, SLOT(btn_stop_onclick()));
         connect(ui->btn_syscheck, SIGNAL(clicked()), this, SLOT(btn_syscheck_onclick()));
         connect(ui->btn_enable, SIGNAL(clicked()), this, SLOT(btn_enable_onclick()));
-        connect(ui->btn_sample, SIGNAL(clicked()), this, SLOT(btn_sample_onclick()));
+        // connect(ui->btn_sample, SIGNAL(clicked()), this, SLOT(btn_sample_onclick()));
         connect(ui->btn_charge_ready, SIGNAL(clicked()), this, SLOT(btn_charge_ready_onclick()));
         connect(ui->btn_charge_close, SIGNAL(clicked()), this, SLOT(btn_charge_close_onclick()));
         connect(ui->btn_charge, SIGNAL(clicked()), this, SLOT(btn_charge_onclick()));
@@ -169,7 +169,7 @@ namespace rviz_gui
 
     void Panel_Global_Plan_Sim::ObsCheckChangeByDis2Home()
     {
-        geometry_msgs::Point p1=pose_map.pose.position, p0;
+        geometry_msgs::Point p1=pose_map.pose.position, p0,p2;
         p0.x=-0.1,  p0.y=0.83;  //  HOME点坐标
         float dis=GetDistanceXY(p0,p1);
 
@@ -185,6 +185,24 @@ namespace rviz_gui
         }  
 
         // ROS_INFO("dis=%.2f  e=%d",dis, obstacle_enable);
+
+        ////////过道obs检测关闭
+
+        p2.x=3.51,  p2.y=53.55;  //  HOME点坐标
+        float dis2=GetDistanceXY(p2,p1);
+
+        if(dis2<1 && obstacle_enable)  
+        {
+            obstacle_enable=false;
+            nh_local->setParam("/speedlimit/obstacle_enable", obstacle_enable);
+        }
+        else if(dis2>1 && !obstacle_enable)
+        {
+            obstacle_enable=true;
+            nh_local->setParam("/speedlimit/obstacle_enable", obstacle_enable);
+        } 
+
+
     }
 
     void Panel_Global_Plan_Sim::AutoChargeProc()

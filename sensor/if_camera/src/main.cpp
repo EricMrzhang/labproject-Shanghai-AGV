@@ -20,6 +20,9 @@
 #include "std_msgs/String.h" 
 #include <common/public.h>
 
+#include "std_srvs/Trigger.h"
+#include <sstream>
+
 using namespace cv;
 using namespace std;
 using namespace IRNet;
@@ -32,8 +35,39 @@ using namespace IRNet;
 long m_device_id = -1;
 // void OnVideoShow(uchar* rgbData, int w, int h, int macIndex,int type);
 
+
+Mat my_image;
+// 修改点1:全局变量与服务回调
+// int photo_count = 0;
+// bool handle_take_photo(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+//     ROS_INFO("Received take if photo request");
+
+// 	// 构造文件名，加上序号
+//     std::string path = "/home/bit/bit_agv_ws/data";
+//     std::stringstream ss;
+//     ss << path << "/if_" << photo_count << ".jpg";
+//     std::string filename = ss.str();
+
+// 	bool success = cv::imwrite(filename, my_image);
+
+//     if (success) {
+//         ROS_INFO("Saved infrared image to %s", filename.c_str());
+//         res.success = true;
+//         res.message = "infrared Photo taken and saved";
+// 		photo_count++; // 序号递增，以便下次保存不会覆盖
+//     } else {
+//         ROS_ERROR("Failed to save infrared image");
+//         res.success = false;
+//         res.message = "Failed to save infrared photo";
+//     }
+
+//     return true;
+// }
+
+
 int main(int argc, char **argv)
 {
+
 	ros::init(argc, argv, "infrared_camera_node");
 	QApplication a(argc, argv);
 	ros::NodeHandle nh;
@@ -76,7 +110,7 @@ int main(int argc, char **argv)
 	usleep(2000);
     player_widget_1->StartTemperatureMeasurement();
 	Mat infrared_image;
-	Mat my_image;
+	// Mat my_image;
 
 
 	char aveTempBuffer[20], aveTempBuffer2[20];
@@ -86,7 +120,14 @@ int main(int argc, char **argv)
 
 	string work_state = "";
 
-	ros::Rate loop_rate(50);	
+	ros::Rate loop_rate(50);
+
+
+	// // 修改点2：创建拍照服务
+	// ros::ServiceServer service = nh.advertiseService("take_if_photo", handle_take_photo);
+    // ROS_INFO("Ready to take if photos.");
+
+
 	while(ros::ok())
 	{   
 		string new_work_state="";
@@ -104,7 +145,7 @@ int main(int argc, char **argv)
 		       std::cout<<"Can't open the file!"<<std::endl;
 
 			imwrite(path+"/if.jpg", infrared_image);
-			imwrite(path+"/myif.jpg", my_image);   //正常作业时注释
+			// imwrite(path+"/myif.jpg", my_image);   
 			// ROS_INFO("path=%s if saved", (path+"/if_temperature.txt").c_str());
 		}
         work_state=new_work_state;
@@ -112,10 +153,10 @@ int main(int argc, char **argv)
 		// printf("max info temp:%.2f,x=%d,y=%d\n",player_widget_1->maxPoint->temp_,player_widget_1->maxPoint->x,player_widget_1->maxPoint->y);
         // printf("ave info ,player_widget_1->minPoint->x,player_widget_1->minPoint->ytemp:%.2f,x=%d,y=%d\n",player_widget_1->minPoint->temp_ );
 		cv::cvtColor(player_widget_1->srcdata,infrared_image,cv::COLOR_RGB2BGR);
-		cv::cvtColor(player_widget_1->srcdata,my_image,cv::COLOR_RGB2BGR);
+		cv::cvtColor(player_widget_1->srcdata,my_image,cv::COLOR_RGB2BGR);      //复制一份原始图像给自己的my_image
 
 		cv::flip(infrared_image,infrared_image,0);  //翻转图像
-		cv::flip(my_image,my_image,0);
+		cv::flip(my_image,my_image,0);              //把my_image一次成型翻转
 		cv::flip(my_image,my_image,1);
 
 		cv::circle(infrared_image,cv::Point(player_widget_1->maxPoint->x,infrared_image.rows-player_widget_1->maxPoint->y),2,cv::Scalar(255,255,255),2);
@@ -175,6 +216,7 @@ int main(int argc, char **argv)
 		}
 		waitKey(1);
 		loop_rate.sleep();
+		ros::spinOnce();    //修改点3：增加spinOnce()函数
 	}
 
     return 0;

@@ -23,6 +23,9 @@
 
 #include <common/public.h>
 
+#include "std_srvs/Trigger.h"
+#include <sstream>
+
 using namespace cv;
 using namespace std;
   //视频流推送的初始化
@@ -32,6 +35,35 @@ PushH264 MyPushH264(1080,1440);//图像的尺寸，高*宽
 Mat src_img;
 
 TNodeCheck *nodecheck;
+
+
+// // 修改点1:全局变量与服务回调
+// int photo_count = 0;
+// bool handle_take_photo(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+//     ROS_INFO("Received take RGB photo request");
+
+// 	// 构造文件名，加上序号
+//     std::string path = "/home/bit/bit_agv_ws/data";
+//     std::stringstream ss;
+//     ss << path << "/rgb_" << photo_count << ".jpg";
+//     std::string filename = ss.str();
+
+// 	bool success = cv::imwrite(filename, src_img);
+
+//     if (success) {
+//         ROS_INFO("Saved RGB image to %s", filename.c_str());
+//         res.success = true;
+//         res.message = "RGB Photo taken and saved";
+// 		photo_count++; // 序号递增，以便下次保存不会覆盖
+//     } else {
+//         ROS_ERROR("Failed to save RGB image");
+//         res.success = false;
+//         res.message = "Failed to save RGB photo";
+//     }
+
+//     return true;
+// }
+
 
 void __stdcall ImageCallBack(unsigned char * pData, MV_FRAME_OUT_INFO_EX* pFrameInfo, void* pUser)
 {
@@ -236,6 +268,13 @@ int main(int argc, char **argv)
     
     string work_state="";
     ros::Rate loop_rate(30);
+
+
+	// // 修改点2：创建拍照服务
+	// ros::ServiceServer service = nh.advertiseService("take_rgb_photo", handle_take_photo);
+    // ROS_INFO("Ready to take RGB photos.");
+
+
     while (ros::ok())
     {
         // if(push_flag)
@@ -267,6 +306,7 @@ int main(int argc, char **argv)
         }
 
         loop_rate.sleep();
+        ros::spinOnce(); // 修改点3：处理回调函数
     }
     
 
