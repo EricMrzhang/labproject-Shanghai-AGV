@@ -78,6 +78,7 @@ public:
         nh->getParam("remote_ip",remote_ip);
         udp = new TUDP(9090);
         udp->AddRemoteIP(remote_ip, 9080);
+        udp->Send("OK");
 
         nodecheck=new TNodeCheck(nh, "node_rate");
 	    nodecheck->Find("node_rate")->SetLimit(10);
@@ -120,6 +121,13 @@ public:
     void run()
     {
         UDP_Proc();
+        
+        static TTimer tmr;
+        if(tmr.GetValue()>2)
+        {
+            tmr.Clear();
+            udp->Send("OK");
+        }
     }
 };
 

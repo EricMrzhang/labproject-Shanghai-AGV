@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>470</width>
-    <height>418</height>
+    <width>532</width>
+    <height>518</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -161,6 +161,73 @@
            <string>2</string>
           </property>
          </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_slam_reset">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(211, 215, 207);
+font: 16pt &quot;Ubuntu&quot;;</string>
+         </property>
+         <property name="text">
+          <string>SLAM重启</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="lab4_3">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>手动操作</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_forward">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(211, 215, 207);
+font: 16pt &quot;Ubuntu&quot;;</string>
+         </property>
+         <property name="text">
+          <string>前进</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_back">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(211, 215, 207);
+font: 16pt &quot;Ubuntu&quot;;</string>
+         </property>
+         <property name="text">
+          <string>后退</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="edt_angle">
+         <property name="text">
+          <string>0.0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_errcode">
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(211, 215, 207);
+font: 16pt &quot;Ubuntu&quot;;</string>
+         </property>
+         <property name="text">
+          <string>ErrCode</string>
+         </property>
         </widget>
        </item>
       </layout>

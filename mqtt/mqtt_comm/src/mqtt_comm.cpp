@@ -35,6 +35,10 @@ string agvId = "123";
 mqtt_comm::resp_agvstate agvstate_msg;
 float remain_path_length=999;
 
+car_ctr::car_state car_state_msg;
+car_ctr::car_ctr car_ctr_msg;
+data_comm::battery battery_msg;
+
 struct fault_info
 {
     string desc;
@@ -102,7 +106,7 @@ void SensorFaultInit()
 
     sensor_data.nodename = "/car_charge";
     sensor_data.paramname = "node_rate";
-    sensor_data.rate_min = 1;
+    sensor_data.rate_min = 0.5;
     sensor_data.fault.desc = "station fault";
     sensor_data.fault.code=0x1005;
     sensor_data.fault.level=1;
@@ -172,6 +176,62 @@ void UpdateFaultInfo()
             fault_array.push_back(n.fault);
         }  
     }
+
+    //  速度控制检测
+    // static TTimer speed_check_tmr;
+    // if(car_state_msg.ctrmode==0 || fabs(car_state_msg.speed[0]-car_ctr_msg.speed)<0.1)  speed_check_tmr.Clear();
+    // else if(speed_check_tmr.GetValue()>20)
+    // {
+    //     fault_info fault;
+    //     fault.desc = "speed ctr fault";
+    //     fault.code=0x4003;
+    //     fault.level=2;
+    //     fault_array.push_back(fault);
+    // }
+
+    //  电机驱动报警
+    bool motorerr_state=false;
+    for(int i=0;i<8;i++)
+        if(car_state_msg.errcode[i]!=0)
+        {
+            motorerr_state=true;
+            break;
+        }
+    if(motorerr_state && !battery_msg.charge_state)
+    {
+        fault_info fault;
+        fault.desc = "motor err";
+        fault.code=0x4001;
+        fault.level=1;
+        fault_array.push_back(fault);
+    }    
+
+    if(car_state_msg.enable!=255 && !battery_msg.charge_state)
+    {
+        fault_info fault;
+        fault.desc = "enable err";
+        fault.code=0x4002;
+        fault.level=1;
+        fault_array.push_back(fault);
+    }  
+
+    if(battery_msg.temperature>50)
+    {
+        fault_info fault;
+        fault.desc = "temperature high";
+        fault.code=0x4003;
+        fault.level=1;
+        fault_array.push_back(fault);
+    }
+
+    if(battery_msg.voltage<300)
+    {
+        fault_info fault;
+        fault.desc = "battery low";
+        fault.code=0x4004;
+        fault.level=1;
+        fault_array.push_back(fault);
+    }   
     
     char errcode[1000]={0}, warncode[1000]={0};
     for(auto it:fault_array)
@@ -208,13 +268,12 @@ void CarStateCallback(const car_ctr::car_state::ConstPtr &msg) //  运动模式
     agvstate_msg.autoDriveEnable = msg->ctrmode;
     agvstate_msg.vehCtrlMode = msg->ctrmode;
     agvstate_msg.vehSpeed = msg->speed[0];
-    // agvstate_msg.cargoloadingStatus = msg->holdcar;
-    // agvstate_msg.vehSpeed=msg->speed[0]*3.6;
-    // if(msg->turnmode==2)  agvstate_msg.vehSpeed=0.2;   //  在自转中给定虚拟速度
+    car_state_msg=*msg;
 }
 
 void CarCtrCallback(const car_ctr::car_ctr::ConstPtr &msg) // 接收车辆控制指令
 {
+    car_ctr_msg=*msg;
 }
 
 void BatteryCallback(const data_comm::battery::ConstPtr &msg) //  电池信息
@@ -225,6 +284,7 @@ void BatteryCallback(const data_comm::battery::ConstPtr &msg) //  电池信息
     agvstate_msg.batteryCurrent = msg->current;
     agvstate_msg.batteryVoltage = msg->voltage;
 
+    battery_msg=*msg;
     // printf("%.0f %.0f %.1f %.1f\n", agvstate_msg.batterySOC, agvstate_msg.batterySOH, agvstate_msg.batteryCurrent, agvstate_msg.batteryVoltage);
 }
 
@@ -233,13 +293,25 @@ void RemainPathCallback(const std_msgs::Float64::ConstPtr &msg)
     remain_path_length=msg->data;
     // ROS_INFO("%.2f", remain_path_length); 
 }
+float GetDis2Home()
+{
+    geometry_msgs::PoseStamped pose_map, pose_base;
+    pose_base.header.stamp = ros::Time::now();
+    pose_base.header.frame_id = "base_link";
+    pose_base.pose.orientation.w=1;
+    transformPose("map", pose_base, pose_map, "XXX");
+
+    geometry_msgs::Point p1=pose_map.pose.position, p0;
+    p0.x=-0.1,  p0.y=0.83;  //  HOME点坐标
+    return GetDistanceXY(p0,p1);
+}
 
 void Pub_AgvState() //  发布车辆状态
 {
     agvstate_msg.msgType = "agvinfo";
     agvstate_msg.timestamp = ros::Time::now().toSec() * 1000;
 
-    if(remain_path_length<1)  agvstate_msg.taskStatus=1;   // task finished
+    if(remain_path_length<1 && GetDis2Home()<1)  agvstate_msg.taskStatus=1;   // task finished
     else  agvstate_msg.taskStatus=0;
     
     resp_agvstate_pub.publish(agvstate_msg);
@@ -297,6 +369,7 @@ int main(int argc, char *argv[])
     ros::Subscriber mqtttask_sub = nh->subscribe<mqtt_comm::mqtt_task>("/mqtt_task", 10, mqttTaskCallback);
     ros::Subscriber matching_loc_sub = nh->subscribe<nav_msgs::Odometry>("/laser_localization", 10, matchingLocCallback);
     ros::Subscriber carstate_sub = nh->subscribe<car_ctr::car_state>("/car_state", 10, CarStateCallback);
+    ros::Subscriber carctr_sub = nh->subscribe<car_ctr::car_ctr>("/car_cmd", 10, CarCtrCallback);
     ros::Subscriber turntable_sub = nh->subscribe<std_msgs::String>("/turntable/table_state", 10, TurntableCallback);
     ros::Subscriber battery_sub = nh->subscribe<data_comm::battery>("/battery_info", 10, BatteryCallback);
     ros::Subscriber controls_sub = nh->subscribe<mqtt_comm::mqtt_controls>("/mqtt_controls", 10, controlsCallback);

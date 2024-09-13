@@ -8,6 +8,8 @@
 #include "irnetsdkmanager.h"
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <opencv2/opencv.hpp>
+#include <iostream>
 
 int rect_Xcenter = 350;  
 int rect_Ycenter = 180;
@@ -25,6 +27,7 @@ PlayerWidget::PlayerWidget(QWidget *parent) :
     // a = 1;
 
     srcdata.create(576,768,CV_8UC3);
+    // srcdata.create(512,640,CV_8UC3);    
     // dstdata.create(576,768,CV_8UC3);
 
     m_FrameTemps = new unsigned short[1280 * 960];
@@ -765,7 +768,29 @@ void PlayerWidget::StopTimer(){
 void PlayerWidget::OnVideoShow(uchar* rgbData, int w, int h, int macIndex,int type){    
     if(m_device_id == macIndex){
         memcpy(m_pRGBBug,rgbData,w*h*3);
+
+
+        // // 假设 rgbData 是 w * h 尺寸的 RGB 图像
+        // // 先创建一个 Mat 对象来封装 rgbData 的原始图像
+        // cv::Mat originalImage(h, w, CV_8UC3, rgbData);
+        
+        // // 打印原始图像的尺寸
+        // // std::cout << "Original image size: " << originalImage.cols << "x" << originalImage.rows << std::endl;
+
+        // // 裁剪图像为 640x512, 从(0,0)开始裁剪
+        // int x = std::max(0, (w - 640) / 2), y = std::max(0, (h - 512) / 2);
+        // cv::Rect cropRegion(x, y, std::min(640, w - x), std::min(512, h - y));  // 定义裁剪区域 
+        // cv::Mat croppedImage = originalImage(cropRegion);  // 进行裁剪
+
+        // croppedImage.copyTo(srcdata);  // 将裁剪后的图像拷贝到 srcdata
+
+        // // 打印裁剪后图像的尺寸
+        // // std::cout << "Cropped image size: " << srcdata.cols << "x" << srcdata.rows << std::endl;
+
+        // 原本的代码
         srcdata.data=rgbData;
+
+
         //  printf("getting in OnVideoShow!!!\n");
 
         // double *avgTemp_ = new double[1920*1080];

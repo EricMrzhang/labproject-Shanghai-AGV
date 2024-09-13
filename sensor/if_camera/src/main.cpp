@@ -109,7 +109,13 @@ int main(int argc, char **argv)
 
 	usleep(2000);
     player_widget_1->StartTemperatureMeasurement();
+
+	// 修改伪彩模式
+	player_widget_1->SetPalette(0); //0～13  12：黑热图
+
 	Mat infrared_image;
+
+	//////////////////////////////////////111////////
 	// Mat my_image;
 
 
@@ -130,6 +136,13 @@ int main(int argc, char **argv)
 
 	while(ros::ok())
 	{   
+        prv_nh.param<int>("rect_Xcenter",rect_Xcenter,350);
+		prv_nh.param<int>("rect_Ycenter",rect_Ycenter,180);
+		prv_nh.param<int>("rect_Xcenter2",rect_Xcenter2,100);  
+		prv_nh.param<int>("rect_Ycenter2",rect_Ycenter2,300);
+		prv_nh.param<int>("rect_bias",rect_bias,100);
+		prv_nh.param<int>("rect_bias2",rect_bias2,100);
+
 		string new_work_state="";
 		prv_nh.getParam("/work_state", new_work_state);
 		if(work_state=="start_work" && new_work_state=="work_done")
@@ -145,8 +158,10 @@ int main(int argc, char **argv)
 		       std::cout<<"Can't open the file!"<<std::endl;
 
 			imwrite(path+"/if.jpg", infrared_image);
+
+////////////////////////////////////////////////////////1111/1//////
 			// imwrite(path+"/myif.jpg", my_image);   
-			// ROS_INFO("path=%s if saved", (path+"/if_temperature.txt").c_str());
+			ROS_INFO("path=%s if saved", (path+"/if_temperature.txt").c_str());
 		}
         work_state=new_work_state;
 
@@ -184,16 +199,26 @@ int main(int argc, char **argv)
 			prv_nh.setParam("/work_state", "work_processing");
 		}
 		
-		sprintf(aveTempBuffer,"%.2f",player_widget_1->avgPoint);
-		sprintf(aveTempBuffer2,"%.2f",player_widget_1->avgPoint2);
+		// sprintf(aveTempBuffer,"%.2f",player_widget_1->avgPoint);
+		// sprintf(aveTempBuffer2,"%.2f",player_widget_1->avgPoint2);
+		
+		sprintf(aveTempBuffer,"%.2f",player_widget_1->minPoint->temp_);
+		sprintf(aveTempBuffer2,"%.2f",player_widget_1->minPoint2->temp_);
+
+
 		aveTempStr= aveTempBuffer;
 		aveTempStr2= aveTempBuffer2;
 		aveTempStr="ave: "+aveTempStr;
 		aveTempStr2="ave2: "+aveTempStr2;
 		cv::putText(infrared_image, aveTempStr, cv::Point(mat_rec_x-30,mat_rec_y-rect_bias-10), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 255), 3);
         cv::putText(infrared_image, aveTempStr2, cv::Point(mat_rec_x2-30,mat_rec_y2-rect_bias2-10), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 255), 3);
-        sprintf(maxTempBuffer,"%.2f",player_widget_1->maxPoint->temp_);
-		sprintf(maxTempBuffer2,"%.2f",player_widget_1->maxPoint2->temp_);
+ 		
+		
+		sprintf(maxTempBuffer,"%.2f",player_widget_1->avgPoint);
+		sprintf(maxTempBuffer2,"%.2f",player_widget_1->avgPoint2);       
+	
+		// sprintf(maxTempBuffer,"%.2f",player_widget_1->maxPoint->temp_);
+		// sprintf(maxTempBuffer2,"%.2f",player_widget_1->maxPoint2->temp_);
         maxTempStr=maxTempBuffer;
 		maxTempStr2=maxTempBuffer2;
 		maxTempStr  ="max: " + maxTempStr;

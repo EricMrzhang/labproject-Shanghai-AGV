@@ -97,6 +97,10 @@ namespace rviz_gui
         connect(ui->btn_charge, SIGNAL(clicked()), this, SLOT(btn_charge_onclick()));
         connect(ui->btn_obstacle, SIGNAL(clicked()), this, SLOT(btn_obstacle_onclick()));
         connect(ui->btn_home, SIGNAL(clicked()), this, SLOT(btn_home_onclick()));
+        connect(ui->btn_slam_reset, SIGNAL(clicked()), this, SLOT(btn_slam_reset_onclick()));
+        connect(ui->btn_forward, SIGNAL(clicked()), this, SLOT(btn_forward_move_onclick()));
+        connect(ui->btn_back, SIGNAL(clicked()), this, SLOT(btn_back_move_onclick()));
+        connect(ui->btn_errcode, SIGNAL(clicked()), this, SLOT(btn_errcode_onclick()));
 
         char filename[1000];
         GetPackagePath("global_plan_sim", filename);
@@ -171,44 +175,28 @@ namespace rviz_gui
     {
         geometry_msgs::Point p1=pose_map.pose.position, p0,p2;
         p0.x=-0.1,  p0.y=0.83;  //  HOME点坐标
-        float dis=GetDistanceXY(p0,p1);
+        p2.x=3.51,  p2.y=53.55;  //  过道obs点坐标
+        float dis1=GetDistanceXY(p0,p1);
+        float dis2=GetDistanceXY(p2,p1);
+        float dis_range=1.5;
 
-        if(dis<0.6 && obstacle_enable)  
+        if((dis1<dis_range || dis2<dis_range) && obstacle_enable)  
         {
             obstacle_enable=false;
             nh_local->setParam("/speedlimit/obstacle_enable", obstacle_enable);
         }
-        else if(dis>0.6 && !obstacle_enable)
+        else if((dis1>dis_range && dis2>dis_range) && !obstacle_enable)
         {
             obstacle_enable=true;
             nh_local->setParam("/speedlimit/obstacle_enable", obstacle_enable);
         }  
-
         // ROS_INFO("dis=%.2f  e=%d",dis, obstacle_enable);
-
-        ////////过道obs检测关闭
-
-        p2.x=3.51,  p2.y=53.55;  //  HOME点坐标
-        float dis2=GetDistanceXY(p2,p1);
-
-        if(dis2<1 && obstacle_enable)  
-        {
-            obstacle_enable=false;
-            nh_local->setParam("/speedlimit/obstacle_enable", obstacle_enable);
-        }
-        else if(dis2>1 && !obstacle_enable)
-        {
-            obstacle_enable=true;
-            nh_local->setParam("/speedlimit/obstacle_enable", obstacle_enable);
-        } 
-
-
     }
 
     void Panel_Global_Plan_Sim::AutoChargeProc()
     {
         static TTimer tmr;
-        if(tmr.GetValue()<30)  return;
+        if(tmr.GetValue()<50)  return;
         tmr.Clear();
 
         geometry_msgs::Point p1=pose_map.pose.position, p0;
@@ -220,7 +208,7 @@ namespace rviz_gui
         {
             btn_charge_close_onclick();
         }
-        else if(battery_info.charge_state==0 && battery_info.voltage<295.0)
+        else if(battery_info.charge_state==0 && battery_info.voltage<300.0)
         {
             btn_charge_ready_onclick();
         }
@@ -231,7 +219,7 @@ namespace rviz_gui
         nh_local->getParam("/gps_base/utmx_zero", utm_x_zero);
         nh_local->getParam("/gps_base/utmy_zero", utm_y_zero);
 
-        char buf[200];
+        char buf[1000];
         
         // float obs_dis_laser = 999, obs_dis_lidar = 999, obs_dis;
         // nh_local->getParam("/laser_radar_obs/obstacle_dis", obs_dis_laser);
@@ -338,7 +326,7 @@ namespace rviz_gui
     {
         battery_info= *msg;
 
-        char buf[200];
+        char buf[1000];
         sprintf(buf, "battery: V %.1fv I %.1fa SOC %d%% T %d charge %d ", battery_info.voltage, battery_info.current, battery_info.SOC, battery_info.temperature, battery_info.charge_state);
         ui->lab5->setText(QString::fromUtf8(buf));
         // ROS_INFO("%2f",battery_info);
@@ -348,7 +336,7 @@ namespace rviz_gui
     {
         charge_station=*msg;
 
-        char buf[200];
+        char buf[1000];
         sprintf(buf, "charge station: door_open %d  pole_out %d  charge_ready %d", msg->door_open, msg->pole_out, msg->charge_ready);
         ui->lab6->setText(QString::fromUtf8(buf));
         // ROS_INFO("%2f",battery_info);
@@ -356,22 +344,34 @@ namespace rviz_gui
 
     void Panel_Global_Plan_Sim::CarStateCallback(const car_ctr::car_state::ConstPtr &msg)  //接收车辆状态
     {
-        char buf[200];
-        sprintf(buf, "car_state: enable=%d turn=%d ctr=%d vel=%.1f", msg->enable, msg->turnmode, msg->ctrmode, msg->speed[0]);
+        string wheel_enable="", turn_enable="";
+        for(int i=0;i<4;i++)
+        {
+            if((msg->enable>>i) & 0x01)  wheel_enable+=" 1";
+            else wheel_enable+=" 0";
+
+            if((msg->enable>>(i+4)) & 0x01)  turn_enable+=" 1";
+            else turn_enable+=" 0";  
+        }
+
+        char buf[1000];
+        sprintf(buf, "car_state: wheel_enable=%s wheel_err=%d %d %d %d\n", wheel_enable.c_str(), msg->errcode[0], msg->errcode[1], msg->errcode[2], msg->errcode[3]);
+        sprintf(buf, "%s                      turn_enable=%s turn_err=%d %d %d %d\n", buf, turn_enable.c_str(), msg->errcode[4], msg->errcode[5], msg->errcode[6], msg->errcode[7]);
+        sprintf(buf, "%s                      turn=%d ctr=%d vel=%.1f", buf, msg->turnmode, msg->ctrmode, msg->speed[0]);
         ui->lab3->setText(QString::fromUtf8(buf));
         car_state = *msg;
     }
 
     void Panel_Global_Plan_Sim::CarCtrCallback(const car_ctr::car_ctr::ConstPtr &msg)      //接收车辆状态
     {
-        char buf[200];
+        char buf[1000];
         sprintf(buf, "car_ctr: turnmode=%d vel=%.1f angle=%.1f", msg->turnmode, msg->speed, msg->angle);
         ui->lab4->setText(QString::fromUtf8(buf));
     }
 
     void Panel_Global_Plan_Sim::TargetCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
     {
-        char buf[200];
+        char buf[1000];
         float angle=GetYawFromPose(*msg)*180/M_PI;
         sprintf(buf, "target:x=%.2f y=%.2f angle=%.2f", msg->pose.position.x, msg->pose.position.y, angle);
         ui->lab2->setText(QString::fromUtf8(buf));
@@ -437,13 +437,18 @@ namespace rviz_gui
         if(config["next_path"].IsDefined())  next_path=config["next_path"].as<string>();
         else  next_path="";
 
-        for(int i=0;i<1000;i++)
+        bool act_enable=false;
+        if(config["act_enable"].IsDefined())  act_enable=config["act_enable"].as<bool>();
+
+        int lost_count=0;
+        for(int i=0;i<4000;i++)
         {
             char posename[100];
             sprintf(posename,"pose%d",i);
             
             if (config[posename]["map_x"].IsDefined())
             {
+                lost_count=0;
                 YAML::Node node=config[posename];
                 mqtt_comm::path_point point;
                 if(node["circle"].IsDefined())
@@ -503,7 +508,7 @@ namespace rviz_gui
                         }  
                     }
                     
-                    if(point.actEnable)
+                    if(point.actEnable && act_enable)
                     {
                         for(int j=0;j<100;j++)
                         {
@@ -524,12 +529,44 @@ namespace rviz_gui
                             }
                             else break;
                         }
+
+                        if(config[posename]["if_point1"].IsDefined())  
+                        {
+                            YAML::Node node=config[posename]["if_point1"];
+                            for(int i=0;i<node.size();i++)
+                                point.if_point1.push_back(node[i].as<int>());
+                        }
+                        else
+                        {
+                            point.if_point1.push_back(536);  point.if_point1.push_back(180);
+                            point.if_point1.push_back(25);
+                        }
+
+                        if(config[posename]["if_point2"].IsDefined())  
+                        {
+                            YAML::Node node=config[posename]["if_point2"];
+                            for(int i=0;i<node.size();i++)
+                                point.if_point2.push_back(node[i].as<int>());
+                        }
+                        else
+                        {
+                            point.if_point2.push_back(170);  point.if_point2.push_back(288);
+                            point.if_point2.push_back(25);
+                        }
                     }    
                     cur_task.path.push_back(point); 
                 }   
             }
-            else break;
+            else 
+            {
+                lost_count++;
+                // ROS_INFO("%d", lost_count);
+                if(lost_count>10)  break;
+            }
+
+            // ROS_INFO("%s",posename);
         }
+       
 
         if(cur_task.path.size()<=1)  return;
 
@@ -644,6 +681,11 @@ namespace rviz_gui
         nh->setParam("/speedlimit/obstacle_enable", !obstacle_enable);   
     }
 
+    void Panel_Global_Plan_Sim::btn_slam_reset_onclick()      
+    {
+        system("pkill matching_node");   
+    }
+
     void Panel_Global_Plan_Sim::btn_sample_onclick()      //  采集数据
     {
         string fn=ui->cb_load->currentText().toStdString();
@@ -669,6 +711,17 @@ namespace rviz_gui
         ofstream ofs(filename);
         ofs << config;
         ofs.close();
+    }
+
+    void Panel_Global_Plan_Sim::btn_errcode_onclick()      
+    {
+        char filename[1000], cmd[1000];
+        GetPackagePath("global_plan_sim", filename);
+        // ROS_INFO("%s",filename);
+        int pos = strlen(filename);
+        if (pos > 0)  filename[pos-1] = 0;
+        sprintf(cmd, "gedit %s/errcode.txt &", filename);
+        system(cmd);   
     }
 
     void Panel_Global_Plan_Sim::ContinueProcess()  
@@ -699,6 +752,67 @@ namespace rviz_gui
         } 
     }    
 
+    void Panel_Global_Plan_Sim::btn_back_move_onclick()
+    {
+        float da=atof(ui->edt_angle->text().toStdString().c_str());
+        
+        geometry_msgs::PoseStamped p_map, pose_zero;
+        pose_zero.header.frame_id="base_link";
+        pose_zero.pose.orientation=tf::createQuaternionMsgFromYaw(da/180*M_PI);;
+        transformPose("map", pose_zero, p_map);
+        float angle=GetYawFromPose(p_map)*180.0/M_PI;
+            
+        cur_task.cmd="run task";
+        cur_task.subcmd="";
+        cur_task.stamp = ros::Time::now();
+        cur_task.path.clear();    
+        
+        mqtt_comm::path_point point;
+        point.vehSpeed=0.2;
+        point.pointHA=angle;
+        point.pointX=p_map.pose.position.x;
+        point.pointY=p_map.pose.position.y;
+        cur_task.path.push_back(point);
+
+        p_map=GetExtendPoseByPose(p_map, -1);
+        point.pointX=p_map.pose.position.x;
+        point.pointY=p_map.pose.position.y;
+        cur_task.path.push_back(point);
+        
+        cur_task.final_path=true;
+        task_pub.publish(cur_task);
+    }
+
+    void Panel_Global_Plan_Sim::btn_forward_move_onclick()
+    {
+        float da=atof(ui->edt_angle->text().toStdString().c_str());
+        
+        geometry_msgs::PoseStamped p_map, pose_zero;
+        pose_zero.header.frame_id="base_link";
+        pose_zero.pose.orientation=tf::createQuaternionMsgFromYaw(da/180*M_PI);;
+        transformPose("map", pose_zero, p_map);
+        float angle=GetYawFromPose(p_map)*180.0/M_PI;
+            
+        cur_task.cmd="run task";
+        cur_task.subcmd="";
+        cur_task.stamp = ros::Time::now();
+        cur_task.path.clear();    
+        
+        mqtt_comm::path_point point;
+        point.vehSpeed=0.2;
+        point.pointHA=angle;
+        point.pointX=p_map.pose.position.x;
+        point.pointY=p_map.pose.position.y;
+        cur_task.path.push_back(point);
+
+        p_map=GetExtendPoseByPose(p_map, 1);
+        point.pointX=p_map.pose.position.x;
+        point.pointY=p_map.pose.position.y;
+        cur_task.path.push_back(point);
+        
+        cur_task.final_path=true;
+        task_pub.publish(cur_task);
+    }
 
 } // end namespace rviz_teleop_commander
 

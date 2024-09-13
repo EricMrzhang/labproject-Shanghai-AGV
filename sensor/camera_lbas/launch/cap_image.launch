@@ -4,10 +4,14 @@
     	<param name="if_auto" value="false" type="bool"/>
         <param name="if_resize" value="false" type="bool"/>
         <param name="push_flag" value="false" type="bool"/>
-        <param name="exp_time" value="500000.0" type="double"/>
+        <param name="exp_time" value="500000.0" type="double"/>    <!--现场光暗，曝光时间500000-->
         <param name="ip" value="192.168.4.201" type="string"/> 
         <param name="pubtopic_name" value="$(arg img_topic)" type="string"/>
         <param name="display" value="0" type="int"/>  
+
+        <!-- <param name="img_width" value="1000" type="int"/>  
+        <param name="img_height" value="1000" type="int"/>  -->
+
         <param name="img_width" value="1280" type="int"/>  
         <param name="img_height" value="1024" type="int"/> 
     </node>

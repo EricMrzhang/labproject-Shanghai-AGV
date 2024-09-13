@@ -77,6 +77,7 @@ public:
     void PubCarCtr(car_ctr::car_ctr ctr);
     
     void PurePursuit(car_ctr::car_ctr &car_ctr);
+    float SpeedLimitByCurve(float len);
 
     float CheckTrackErr()
     {
@@ -151,6 +152,10 @@ void TPathTrack::LocalPathCallback(const nav_msgs::Path::ConstPtr &msg) // 接�
     ref_speed = localpath.poses[0].pose.position.z; //  速度为首点Z数据
     ref_speed = min(ref_speed, speedlimit);
 
+    float speedlimit_curve=SpeedLimitByCurve(3);
+    if(ref_speed>speedlimit_curve)  ref_speed=speedlimit_curve;
+
+
     // printf("vel0=%.2f\n", localpath.poses[0].pose.positio    
     // printf("vel1=%.2f\n", localpath.poses[1].pose.position.z);
 }
@@ -176,6 +181,32 @@ void TPathTrack::ChargeStationCallback(const car_ctr::charge_station::ConstPtr &
     charge_station=*msg;
 }
 
+float TPathTrack::SpeedLimitByCurve(float len)
+{
+    float res=999;
+    if(localpath.poses.size()<5) return res;
+
+    float a0=GetYawFromPose(localpath.poses.front())*180/M_PI;
+    float d_angle=0;
+    float s=0;
+    for(int i=0;i<localpath.poses.size()-3;i++)
+    {
+        float ds=GetDistanceXY(localpath.poses[i].pose.position, localpath.poses[i+1].pose.position);
+        s+=ds;
+
+        float a1=GetYawFromPose(localpath.poses[i])*180/M_PI;
+        d_angle=max(d_angle, fabs(a1-a0));
+        if(s>len)  break;
+    }
+        
+    if(d_angle>25) res=0.12;
+    else if(d_angle>16) res=0.16;   
+    else if(d_angle>8) res=0.3;   
+    // ROS_INFO("%.2f %.2f", d_angle, res);
+
+    return res;
+}
+
 void TPathTrack::UpdateCtrParam(float vel) //  根据速度规划预瞄点和转向控制系数
 {
     vel = fabs(vel);
@@ -198,13 +229,11 @@ void TPathTrack::UpdateCtrParam(float vel) //  根据速度规划预瞄点和转
         aim_range = 2, steering_property = 1.5;        
     else if (fabs(vel) > 0.4)
         aim_range = 1.5, steering_property = 2;       
-    else if (fabs(vel) > 0.2)
-        aim_range = 1.0, steering_property = 2.5;   
+    // else if (fabs(vel) > 0.2)
+    //     aim_range = 1.0, steering_property = 2.5;   
     else 
         // aim_range = 1, steering_property = 3;
-        aim_range = 0.5, steering_property = 2;
-    
-    
+        aim_range = 1, steering_property = 2;
     
     if (cur_carstate.turnmode == 4)  aim_range=3;
 
@@ -238,8 +267,9 @@ float TPathTrack::GetAimAngleErr(geometry_msgs::PointStamped aimp, string move_d
 // 纯轨迹跟踪控制
 void TPathTrack::PurePursuit(car_ctr::car_ctr &car_ctr)
 {
-    car_ctr.turnmode = cur_carstate.turnmode;
+    car_ctr.turnmode = 0;  //cur_carstate.turnmode;
     car_ctr.speed = ref_speed;
+
     if(move_dir=="back" || move_dir=="right")  car_ctr.speed*=-1;
     car_ctr.angle = -steering_property*track_angle_err;
     // printf("car_ctr=%.2f\n  track_angle_err=%.2f  ",car_ctr.angle, track_angle_err);
@@ -293,7 +323,7 @@ void TPathTrack::Run() //  主运行函数
         {
             car_ctr.angle = car_ctr.speed = 0;
             if(charge_station.charge_ready)
-                car_ctr.turnmode = 4;
+                car_ctr.turnmode = 5;
             else 
                 car_ctr.turnmode = 0;
         }

@@ -21,7 +21,7 @@ using namespace std;
 ros::Publisher pub_cloud,pub_cloud_filter;  
 
 float max_x_range=5, max_y_range=2; 
-float max_z=0, min_z=-0.8; 
+float max_z=0, min_z=-0.6; 
 
 TNodeCheck *nodecheck;
 string topicname;

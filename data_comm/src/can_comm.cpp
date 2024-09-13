@@ -14,6 +14,14 @@ TNodeCheck *nodecheck;
 ros::NodeHandle *nh;
 ros::Publisher battery_pub;
 
+float GetSOCByVoltage(float v)
+{
+	float max_v=312, min_v=295;
+    if(v>=max_v)  v=max_v;
+	else if(v<=min_v)  v=min_v;
+    return (v-min_v)/(max_v-min_v)*100;
+}
+
 void ProcCanMsg()
 {
 	// ROS_INFO("size=%d\n", can->rec_frames.size());
@@ -31,7 +39,7 @@ void ProcCanMsg()
 			battery_info.voltage=0.1*(frame->data[4]+frame->data[5]*256);
 			battery_info.current=0.1*(frame->data[2]+frame->data[3]*256-5000);
 			battery_info.charge_state=(frame->data[0] & 0x02)>0;
-			battery_info.SOC=frame->data[1];
+			battery_info.SOC=GetSOCByVoltage(battery_info.voltage);  //frame->data[1];
 			battery_pub.publish(battery_info);
 
             nodecheck->Find("node_rate")->Beat();			

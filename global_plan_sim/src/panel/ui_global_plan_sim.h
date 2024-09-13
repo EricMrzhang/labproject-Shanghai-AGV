@@ -14,6 +14,7 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
@@ -37,6 +38,13 @@ public:
     QHBoxLayout *horizontalLayout_2;
     QLabel *lab4_2;
     QComboBox *cb_load;
+    QPushButton *btn_slam_reset;
+    QHBoxLayout *horizontalLayout_4;
+    QLabel *lab4_3;
+    QPushButton *btn_forward;
+    QPushButton *btn_back;
+    QLineEdit *edt_angle;
+    QPushButton *btn_errcode;
     QHBoxLayout *horizontalLayout;
     QPushButton *btn_enable;
     QPushButton *btn_load;
@@ -55,7 +63,7 @@ public:
     {
         if (Panel_Global_Plan_Sim->objectName().isEmpty())
             Panel_Global_Plan_Sim->setObjectName(QString::fromUtf8("Panel_Global_Plan_Sim"));
-        Panel_Global_Plan_Sim->resize(470, 418);
+        Panel_Global_Plan_Sim->resize(532, 518);
         verticalLayout = new QVBoxLayout(Panel_Global_Plan_Sim);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         verticalLayout_2 = new QVBoxLayout();
@@ -140,8 +148,52 @@ public:
 
         horizontalLayout_2->addWidget(cb_load);
 
+        btn_slam_reset = new QPushButton(Panel_Global_Plan_Sim);
+        btn_slam_reset->setObjectName(QString::fromUtf8("btn_slam_reset"));
+        btn_slam_reset->setStyleSheet(QString::fromUtf8("background-color: rgb(211, 215, 207);\n"
+"font: 16pt \"Ubuntu\";"));
+
+        horizontalLayout_2->addWidget(btn_slam_reset);
+
 
         verticalLayout_2->addLayout(horizontalLayout_2);
+
+        horizontalLayout_4 = new QHBoxLayout();
+        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
+        lab4_3 = new QLabel(Panel_Global_Plan_Sim);
+        lab4_3->setObjectName(QString::fromUtf8("lab4_3"));
+        lab4_3->setFont(font1);
+
+        horizontalLayout_4->addWidget(lab4_3);
+
+        btn_forward = new QPushButton(Panel_Global_Plan_Sim);
+        btn_forward->setObjectName(QString::fromUtf8("btn_forward"));
+        btn_forward->setStyleSheet(QString::fromUtf8("background-color: rgb(211, 215, 207);\n"
+"font: 16pt \"Ubuntu\";"));
+
+        horizontalLayout_4->addWidget(btn_forward);
+
+        btn_back = new QPushButton(Panel_Global_Plan_Sim);
+        btn_back->setObjectName(QString::fromUtf8("btn_back"));
+        btn_back->setStyleSheet(QString::fromUtf8("background-color: rgb(211, 215, 207);\n"
+"font: 16pt \"Ubuntu\";"));
+
+        horizontalLayout_4->addWidget(btn_back);
+
+        edt_angle = new QLineEdit(Panel_Global_Plan_Sim);
+        edt_angle->setObjectName(QString::fromUtf8("edt_angle"));
+
+        horizontalLayout_4->addWidget(edt_angle);
+
+        btn_errcode = new QPushButton(Panel_Global_Plan_Sim);
+        btn_errcode->setObjectName(QString::fromUtf8("btn_errcode"));
+        btn_errcode->setStyleSheet(QString::fromUtf8("background-color: rgb(211, 215, 207);\n"
+"font: 16pt \"Ubuntu\";"));
+
+        horizontalLayout_4->addWidget(btn_errcode);
+
+
+        verticalLayout_2->addLayout(horizontalLayout_4);
 
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
@@ -255,6 +307,12 @@ public:
         cb_load->setItemText(0, QApplication::translate("Panel_Global_Plan_Sim", "1", nullptr));
         cb_load->setItemText(1, QApplication::translate("Panel_Global_Plan_Sim", "2", nullptr));
 
+        btn_slam_reset->setText(QApplication::translate("Panel_Global_Plan_Sim", "SLAM\351\207\215\345\220\257", nullptr));
+        lab4_3->setText(QApplication::translate("Panel_Global_Plan_Sim", "\346\211\213\345\212\250\346\223\215\344\275\234", nullptr));
+        btn_forward->setText(QApplication::translate("Panel_Global_Plan_Sim", "\345\211\215\350\277\233", nullptr));
+        btn_back->setText(QApplication::translate("Panel_Global_Plan_Sim", "\345\220\216\351\200\200", nullptr));
+        edt_angle->setText(QApplication::translate("Panel_Global_Plan_Sim", "0.0", nullptr));
+        btn_errcode->setText(QApplication::translate("Panel_Global_Plan_Sim", "ErrCode", nullptr));
         btn_enable->setText(QApplication::translate("Panel_Global_Plan_Sim", "\344\275\277\350\203\275", nullptr));
         btn_load->setText(QApplication::translate("Panel_Global_Plan_Sim", "\350\257\273\345\217\226", nullptr));
         btn_charge_ready->setText(QApplication::translate("Panel_Global_Plan_Sim", "\345\205\205\347\224\265\345\207\206\345\244\207", nullptr));

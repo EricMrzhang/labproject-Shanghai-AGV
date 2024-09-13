@@ -311,7 +311,7 @@ bool TLocalPathPlan::CheckStopAtNextPoint(nav_msgs::Path path, int id, bool acti
         return true;
     }
 
-    float line_varangle_max = 40; //  直线允许最大变化角度
+    float line_varangle_max = 60; //  直线允许最大变化角度
 
     //  检查车头朝向是否改变
     float heading1 = GetYawFromPose(path.poses[id]) * 180 / M_PI;
@@ -450,8 +450,11 @@ void TLocalPathPlan::LocalPathPlan()
     local_path.header.stamp = ros::Time::now();
     local_path.poses.clear();
 
-    FindNearestPointInPath(global_path, Nearest_ID, 2);
-    // printf("near=%d\n",Nearest_ID);
+    FindNearestPointInPath(global_path, Nearest_ID, 1);
+
+    // int task_path_id=0;
+    // FindNearestPointInPath(task_path, task_path_id, 2);
+    // printf("near=%d\n", task_path_id);
 
     // 获得已经走过的路程和剩余路程
     GetPathLength(global_path, Nearest_ID, path_passed, path_remain);

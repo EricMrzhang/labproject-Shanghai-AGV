@@ -5,5 +5,7 @@ float64 pointHA
 bool actEnable
 string caption
 path_point_action[] actions
+int32[] if_point1
+int32[] if_point2
 
 

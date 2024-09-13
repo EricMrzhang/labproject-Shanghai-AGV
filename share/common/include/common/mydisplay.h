@@ -27,7 +27,7 @@ bool transformPoint(string target_frame, geometry_msgs::PointStamped &src_p, geo
     try
     {
         src_p.header.stamp = ros::Time(0);
-        listener.waitForTransform(target_frame, src_p.header.frame_id, src_p.header.stamp, ros::Duration(1));
+        listener.waitForTransform(target_frame, src_p.header.frame_id, src_p.header.stamp, ros::Duration(0.3));
         listener.transformPoint(target_frame, src_p, dst_p);
         res = true;
         // printf("AAA=%.2f %.2f\n", dst_p.point.x, dst_p.point.y);
@@ -57,7 +57,7 @@ bool transformPose(string target_frame, geometry_msgs::PoseStamped src_p, geomet
     try
     {
         src_p.header.stamp = ros::Time(0);
-        listener.waitForTransform(target_frame, src_p.header.frame_id, src_p.header.stamp, ros::Duration(2), ros::Duration(0.01), str);
+        listener.waitForTransform(target_frame, src_p.header.frame_id, src_p.header.stamp, ros::Duration(0.3), ros::Duration(0.01), str);
         listener.transformPose(target_frame, src_p, dst_p);
         // dst_p.header.stamp=src_p.header.stamp;
         // dst_p.header.frame_id=target_frame;
@@ -243,7 +243,7 @@ visualization_msgs::Marker displayCarPosition(geometry_msgs::PoseStamped pose_st
     marker.type = visualization_msgs::Marker::ARROW;
     marker.action = visualization_msgs::Marker::ADD;
     marker.scale.x = 0.9;//+pose_stamped.pose.position.z;
-    marker.scale.y = 0.4;
+    marker.scale.y = 0.55;
     marker.scale.z = 0.3;
     marker.color.a = 1.0f;
 

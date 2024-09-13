@@ -2,7 +2,7 @@
 
 <node pkg="car_ctr" name="car_ctr" type="car_ctr" output="screen">
     <param name="can_enable" value="false"/>
-    <param name="remote_ip" value="192.168.1.101"/> 
+    <param name="remote_ip" value="192.168.1.101"/>
 </node>
 
 <node pkg="car_ctr" name="car_charge" type="car_charge" output="screen">

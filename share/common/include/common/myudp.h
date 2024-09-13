@@ -163,7 +163,7 @@ public:
                 // strcpy(rec_buf,recvbuf);
                 memcpy(rec_buf,recvbuf,len);
                 
-                // printf("recvbuf = %s\n",recvbuf);
+                // printf("ip=%s recvbuf = %s\n",ip.c_str(),recvbuf);
             }
 
             if (len <= 0)

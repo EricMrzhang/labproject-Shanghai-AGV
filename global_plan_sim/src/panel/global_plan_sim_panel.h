@@ -61,6 +61,10 @@ namespace rviz_gui
         void btn_charge_close_onclick();
         void btn_obstacle_onclick();
         void btn_home_onclick();
+        void btn_slam_reset_onclick();
+        void btn_back_move_onclick();
+        void btn_forward_move_onclick();
+        void btn_errcode_onclick();
         
         // 内部变量.
     protected:
@@ -109,7 +113,7 @@ namespace rviz_gui
         void UpdateErrCode();
         void ObsCheckChangeByDis2Home();
         void AutoChargeProc();
-
+      
     private:
         Ui::Panel_Global_Plan_Sim *ui;
         dialog_node_check *d_nodecheck;

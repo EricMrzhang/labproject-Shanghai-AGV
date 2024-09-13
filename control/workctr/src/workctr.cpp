@@ -117,6 +117,15 @@ void TWorkCtr::FindPoseAction()
                 it.actions.clear();
                 // ROS_INFO("action size=%d", actions.size());
                 pos_id=it.caption;
+
+                nh->setParam("/read_if_cam/rect_Xcenter", it.if_point1[0]);
+                nh->setParam("/read_if_cam/rect_Ycenter", it.if_point1[1]);
+                nh->setParam("/read_if_cam/rect_bias", it.if_point1[2]);
+
+                nh->setParam("/read_if_cam/rect_Xcenter2", it.if_point2[0]);
+                nh->setParam("/read_if_cam/rect_Ycenter2", it.if_point2[1]);
+                nh->setParam("/read_if_cam/rect_bias2", it.if_point2[2]);;
+
                 break;
             }
         }

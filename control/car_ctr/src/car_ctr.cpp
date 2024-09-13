@@ -26,17 +26,19 @@ private:
 
     car_ctr::car_ctr car_ctr;
     car_ctr::car_state car_state;
-    bool can_enable=false;
+    bool can_enable=false, run_enable=false;
     TCan *can=NULL;
-    float mode_change_time=2.5;
+    float mode_change_time=5;
     TNodeCheck *nodecheck;
 
     void CarCmdCallback(const car_ctr::car_ctr::ConstPtr &msg)
     {
+        if(!run_enable || car_state.ctrmode==0 || car_state.enable!=255)  return;
+
         car_ctr=*msg;
         char str[50]={0};
 
-        if(car_state.turnmode!=car_ctr.turnmode)
+        if(car_state.turnmode!=car_ctr.turnmode && delay_time.GetValue()>mode_change_time)
         {
             sprintf(str, "Car SteerModeCtrl %d",car_ctr.turnmode);
             udp->Send(str);
@@ -47,7 +49,7 @@ private:
             sprintf(str, "Car Run %.2f %.2f", msg->speed, msg->angle);
             udp->Send(str);
         }
-        else if(delay_time.GetValue() > mode_change_time && (car_ctr.turnmode==2 || car_ctr.turnmode==4)) 
+        else if(delay_time.GetValue() > mode_change_time && (car_ctr.turnmode==2 || car_ctr.turnmode==4 || car_ctr.turnmode==5)) 
         {   
             sprintf(str, "Car Run %.2f 0.0", msg->speed);  
             udp->Send(str);
@@ -89,6 +91,16 @@ public:
         udp->Send(str);
     }
 
+    void AutoCtr(bool v)
+    {
+        char str[50];
+        if (v)  sprintf(str, "Car Code_Ctrl");
+        else  sprintf(str, "Car Key_Ctrl");
+        udp->Send(str);
+        usleep(2000);
+        // ROS_INFO("AutoCtr %s", str);
+    }
+
     void Enable(bool e)
     {
         char str[50];
@@ -96,7 +108,7 @@ public:
         else  sprintf(str, "Car Disable");
         udp->Send(str);
         usleep(2000);
-        // ROS_INFO("ENABLE!");
+        // ROS_INFO("Enable %s", str);
     }
 
     void UDP_Proc() //  用于处理小车上传的状态信息
@@ -108,9 +120,9 @@ public:
     
         char recbuf[1000];
         strcpy(recbuf, udp->rec_buf);
+        // ROS_INFO("%s || %d", recbuf, strlen(recbuf));
 
         vector<string> strs = split(recbuf, ";");
-        // ROS_INFO("%s %d", recbuf, strs.size());
         // return;
         
         for (int i = 0; i < strs.size(); i++)
@@ -118,7 +130,7 @@ public:
             vector<string> substrs = split(strs.at(i), " ");
             if (substrs.size()>=4 && substrs[0] == "Car")
             {
-                car_state.enable = atoi(substrs.at(1).c_str())==8;
+                car_state.enable = atoi(substrs.at(1).c_str());
                 car_state.ctrmode = atoi(substrs.at(2).c_str());
                 car_state.turnmode = atoi(substrs.at(3).c_str());
                 nodecheck->Find("node_rate")->Beat();
@@ -130,15 +142,29 @@ public:
                 // car_state_msg.WheelMotor_Enable[id] = atoi(substrs.at(1).c_str());
                 car_state.speed[id] = atof(substrs.at(2).c_str()) * RPM2SPD;
             }
+            if (substrs.size()>=9 && substrs[0].find("errcode") != -1) // || substrs[0].substr(0,4)=="Turn" )
+            {
+                for(int i=0;i<8;i++)  car_state.errcode[i]=atoi(substrs[1+i].c_str());
+                // ROS_INFO("%s", substrs[8].c_str());
+            }
         }
             
         carstate_pub.publish(car_state);
 
         static TTimer tmr;
-        if(tmr.GetValue()>1)
+        if(tmr.GetValue()>3)
         {
             tmr.Clear();
-            if(car_state.enable==false && car_state.ctrmode==1)  Enable(true);
+            if(run_enable)
+            {
+                if(car_state.ctrmode==0)  AutoCtr(true);  
+                else if(car_state.enable!=255)  Enable(true);
+            }
+            else 
+            {
+                if(car_state.enable!=0)  Enable(false);
+                else if(car_state.ctrmode==1)  AutoCtr(false);
+            }    
             // ROS_INFO("ENABLE!");
         }    
     }
@@ -150,6 +176,8 @@ public:
 
     void run()
     {
+        nh->getParam("/pathtrack/run_enable", run_enable);
+        
         if(can_enable)  Can_Proc();
         else  UDP_Proc();
     }

@@ -1,6 +1,6 @@
 accordingPathdir: false
 onlyAkm: false
-
+act_enable: true
 pose0:
   map_x: 0.4712182879447937
   map_y: 0.83

@@ -264,7 +264,8 @@ bool MatchingFlow::FindGpsData(double curTime) {
 
 }
 
-bool MatchingFlow::PublishData(double timeStamp, const Eigen::Matrix4f& pose) {
+bool MatchingFlow::PublishData(double timeStamp, const Eigen::Matrix4f& pose) 
+{
     double timeStamp_ = timeStamp;
     Eigen::Matrix4f pose_ = pose;
     PublishDataFromBase(timeStamp_, pose_);
@@ -475,11 +476,11 @@ bool MatchingFlow::initPosebyconfig(){
 
 void MatchingFlow::savePosetoconfig(Eigen::Matrix4f & pose)
 {   
-
     static int count = 0;
-    count = (count + 1) % 15;
-    if (count)
-        return;
+    count++;
+    if(count<20) return;
+    count=0;
+
     std::ofstream fout(config_file_path);
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {

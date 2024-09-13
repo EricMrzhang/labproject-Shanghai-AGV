@@ -24,7 +24,7 @@
 using namespace std;
 
 ros::NodeHandle *nh;
-float agv_width=0.6, agv_length=0.9;
+float agv_width=0.4, agv_length=0.9;
 float obs_dis=999;
 
 string dir="front";
